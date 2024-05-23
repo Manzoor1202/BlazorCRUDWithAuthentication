@@ -1,0 +1,120 @@
+﻿@page "/Employees"
+@using BlazorCRUDWithAuthentication.Data
+@inject EmployeeService employeeService
+@inject NavigationManager _navigationManager
+@attribute [Authorize]
+
+<NavLink class="nav-link" href="Employee/AddEmployee">
+    <span class="oi oi-plus" aria-hidden="true">Add Employee</span>
+</NavLink>
+
+@* <button class="nav-link" @onclick="NavigateToAddEmployee">
+    <span class="oi oi-plus" aria-hidden="true">Add Employee</span>
+</button> *@
+
+<h1>Employee Information</h1>
+@if (EmpObj is null)
+{
+    <div class="text-center">
+        <img src="/images/loading.gif" />
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Emp Id</th>
+                <th>Employee Name</th>
+                <th>Gender</th>
+                <th>Designation</th>
+                <th>City</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in EmpObj)
+            {
+                <tr>
+                    <td>@emp.Id</td>
+                    <td>@emp.EmployeName</td>
+                    <td>@emp.Gender</td>
+                    <td>@emp.Designation</td>
+                    <td>@emp.City</td>
+                    <td>
+                        <a class="nav-link" href="EditEmployee/@emp.Id">
+                            <span class="oi oi-pencil" aria-hidden="true">Edit</span>
+                        </a>
+                        <a class="nav-link" href="Delete/@emp.Id">
+                            <span class="oi oi-trash" aria-hidden="true">Delete</span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    List<Employee> EmpObj;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        EmpObj = await Task.Run(() => employeeService.GetAllEmployeesAsync());
+        var authState = await AuthenticationState;
+        if (!authState.User.Identity.IsAuthenticated)
+        {
+            var uri = new Uri(_navigationManager.Uri);
+            _navigationManager.NavigateTo($"/identity/account/login?returnUrl={uri.LocalPath}", forceLoad: true);
+        }
+        // else
+        // {
+           
+        //     if (!authState.User.IsInRole(Blazor_Common.SD.Role_Admin))
+        //     {
+        //         _navigationManager.NavigateTo("/ErrorPage");
+        //     }
+        // }
+    }
+
+
+
+
+
+    // List<Employee> EmpObj;
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     EmpObj = await Task.Run(() => employeeService.GetAllEmployeesAsync());
+    // }
+
+
+    // [CascadingParameter]
+    // public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     var authState = await AuthenticationState;
+    //     if (!authState.User.Identity.IsAuthenticated)
+    //     {
+    //         var uri = new Uri(_navigationManager.Uri);
+    //         _navigationManager.NavigateTo($"/identity/account/login?returnUrl={uri.LocalPath}", forceLoad: true);
+    //     }
+    //     else
+    //     {
+    //         if (!authState.User.IsInRole(Blazor_Common.SD.Role_Admin))
+    //         {
+    //             _navigationManager.NavigateTo("/ErrorPage");
+    //         }
+    //     }
+    // }
+
+    // void NavigateToAddEmployee()
+    // {
+    //     NavigationManager.NavigateTo("/AddEmployee");
+    // }
+
+}
